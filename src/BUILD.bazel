@@ -1,0 +1,16 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+# define c++ binary
+cc_library(
+  name = "counter_cpp",
+  srcs = ["counter.cc"],
+  hdrs = ["counter.h"],
+)
+
+# define rust library
+rust_binary(
+  name = "main",
+  srcs = ["main.rs"],
+  edition = "2021",
+)
