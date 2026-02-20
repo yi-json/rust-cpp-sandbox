@@ -4,7 +4,7 @@ module(
 )
 
 # Core support for Rust and C++
-bazel_dep(name = "rules_rust", version = "0.38.0")
-bazel_dep(name - "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_rust", version = "0.54.1")
+bazel_dep(name = "rules_cc", version = "0.0.9")
 
 use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
