@@ -1,0 +1,7 @@
+.claude/
+
+# ignore bazel symlinks
+bazel-*
+
+# macOS
+.DS_Store
