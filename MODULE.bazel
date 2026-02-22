@@ -1,10 +1,24 @@
-module(
-  name = "sandbox",
-  version = "0.0.1",
-)
+module(name = "rust-cpp-sandbox", version = "0.1.0")
 
 # Core support for Rust and C++
-bazel_dep(name = "rules_rust", version = "0.54.1")
+bazel_dep(name = "rules_rust", version = "0.68.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 
-use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+# using a particular version of the rust compiler
+# taken from: https://bazelbuild.github.io/rules_rust/index.html
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2024",
+    versions = [ "1.85.0" ],
+)
+
+# Fetch the CXX crate. this is equivalent to cargo add cxx
+# taken from: https://bazelbuild.github.io/rules_rust/crate_universe_bzlmod.html#dependencies
+# specifically in direct dependencies section
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.spec(
+    package = "cxx",
+    version = "1.0.138",
+)
+crate.from_specs()
+use_repo(crate, "crates")
