@@ -4,21 +4,16 @@ module(name = "rust-cpp-sandbox", version = "0.1.0")
 bazel_dep(name = "rules_rust", version = "0.68.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 
-# using a particular version of the rust compiler
-# taken from: https://bazelbuild.github.io/rules_rust/index.html
+# The Native CXX Bazel Module (Bumped to a version that exists on the BCR)
+bazel_dep(name = "cxx.rs", version = "1.0.192")
+
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(
     edition = "2024",
-    versions = [ "1.85.0" ],
+    versions = ["1.85.0"],
 )
 
-# Fetch the CXX crate. this is equivalent to cargo add cxx
-# taken from: https://bazelbuild.github.io/rules_rust/crate_universe_bzlmod.html#dependencies
-# specifically in direct dependencies section
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
-crate.spec(
-    package = "cxx",
-    version = "1.0.138",
-)
+# Initialize crate_universe (Keep this empty for future standard crates!)
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.from_specs()
 use_repo(crate, "crates")

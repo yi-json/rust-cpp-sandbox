@@ -1,16 +1,29 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-# define c++ binary
-cc_library(
-  name = "counter_cpp",
-  srcs = ["counter.cc"],
-  hdrs = ["counter.h"],
+# 1. Run the CXX code generator using the native @cxx.rs module
+genrule(
+    name = "generate_cxx_bridge",
+    srcs = ["main.rs"],
+    outs = ["main.cxx.cc", "main.cxx.h"],
+    cmd = "$(execpath @cxx.rs//:codegen) $(location main.rs) -o $(location main.cxx.h) -o $(location main.cxx.cc)",
+    tools = ["@cxx.rs//:codegen"],
 )
 
-# define rust library
+# 2. Compile Counter class and the generated bridge
+cc_library(
+  name = "counter_cpp",
+  srcs = ["counter.cc", "main.cxx.cc"],
+  hdrs = ["counter.h", "main.cxx.h"],
+  deps = ["@cxx.rs//:core"], # Fixed typo: was @cxx//:cxx_cc
+)
+
+# 3. Compile rust binary and link it to c++ library
 rust_binary(
   name = "main",
   srcs = ["main.rs"],
-  edition = "2021",
+  deps = [
+    ":counter_cpp",
+    "@cxx.rs//:cxx",
+  ],
 )

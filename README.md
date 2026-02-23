@@ -6,11 +6,16 @@
 
 This repository is a **standalone learning environment** designed to mimic the build and interoperability challenges of the `pw_bluetooth_sapphire` migration. It allows for safe experimentation with C++/Rust bridges without the complexity of the full Pigweed/Fuchsia build system.
 
+To run the executable and actually see your code print to the terminal, use:
+```bash
+bazel run //src:main
+```
+
 ### Project Scope
 
 1.  **Phase 1: The Basics (Current)**:
     - Set up a Bazel workspace that builds both C++ and Rust.
-    - **Goal**: Ensure `bazel run //src:main` prints "Hello". (✅ Done)
+    - **Goal**: Ensure `bazel run //src:main` prints "Hello".
 2.  **Phase 2: The Bridge (`cxx`)**:
     - Configure the `cxx` crate.
     - Create a bidirectional bridge where Rust can instantiate and call methods on a C++ class (`src/counter.h`).

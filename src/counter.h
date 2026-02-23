@@ -1,11 +1,14 @@
 #pragma once
+#include <memory>
 
 class Counter {
 public:
-  Counter() : value_(0) {}
-  void increment() { value_++; }
-  int get() const { return value_; }
-
+  Counter();
+  void inc();
+  int get() const;
 private:
-  int value_;
+  int val;
 };
+
+// Factory function for Rust to call
+std::unique_ptr<Counter> new_counter();
