@@ -16,6 +16,7 @@ mod ffi {
     extern "Rust" {
         fn assign_peer_id(address: DeviceAddressBytes) -> PeerId;
         fn verify_device_name(name: &CxxString) -> String;
+        fn process_payload(payload: &CxxVector<u8>) -> Vec<u8>;
     }
 }
 
@@ -36,6 +37,23 @@ fn verify_device_name(name: &cxx::CxxString) -> String {
     println!("We allocated a new string: {}", final_name);
 
     final_name
+}
+
+fn process_payload(payload: &cxx::CxxVector<u8>) -> Vec<u8> {
+    println!("Rust received a C++ payload of {} bytes", payload.len());
+
+    // allocate a brand new vec on Rust heap
+    let mut response_packet = Vec::new();
+
+    // we can iterate over the C++ vector exactly like a Rust slice
+    for byte in payload.iter() {
+        response_packet.push(*byte);
+    }
+
+    // append a new byte (our mock checksum)
+    response_packet.push(0xFF);
+
+    response_packet
 }
 
 

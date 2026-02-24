@@ -27,4 +27,13 @@ void simulate_discovery() {
     rust::String result = verify_device_name(text);
     std::cout << "C++ received new string: " << result.c_str() << std::endl;
     std::cout << "Size of string: " << result.size() << std::endl;
+
+    std::vector<uint8_t> payload = {1, 2, 3, 4};
+    rust::Vec<uint8_t> packet = process_payload(payload);
+    std::cout << "C++ received new vector: ";
+    for (uint8_t x : packet) {
+      std::cout << static_cast<int>(x) << " "; 
+    }
+    std::cout << std::endl;
+
 }
