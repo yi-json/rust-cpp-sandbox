@@ -1,41 +1,55 @@
-# Rust & C++ Sandbox
+# Rust + C++ Interop Sandbox
 
-## Project Context (Migration Sandbox)
+This sandbox demonstrates how to safely bridge Rust and C++ using the [`cxx`](https://cxx.rs/) crate and the Bazel build system. It covers the complete spectrum of cross-language memory management and function calling.
 
-### Purpose
+## Project Structure
+* `src/main.rs`: The entry point and the `#[cxx::bridge]` macro definition.
+* `src/rust_device.rs`: Pure, safe Rust business logic (isolated from FFI).
+* `src/device.cc`: The C++ implementation side.
+* `src/device.h`: C++ header file to declare functions for the generated bridge.
+* `src/counter.cc` & `src/counter.h`: The implementation of the C++ Opaque Type (`Counter` class).
+* `src/BUILD.bazel`: The Bazel build graph linking the C++ compiler, Rust compiler, and CXX code generator.
 
-This repository is a **standalone learning environment** designed to mimic the build and interoperability challenges of the `pw_bluetooth_sapphire` migration. It allows for safe experimentation with C++/Rust bridges without the complexity of the full Pigweed/Fuchsia build system.
 
-To run the executable and actually see your code print to the terminal, use:
+## How to Run
+To compile and execute the complete FFI pipeline, first navigate to `src/device.cc` and comment/uncomment the bridge phase(s) you'd like to execute.
+
+then run:
 ```bash
 bazel run //src:main
 ```
 
-### Project Scope
+## Interop Phases Covered
+### 1. C++ Opaque Types
+Concept: Rust holds a blind pointer to a C++ heap-allocated object.
 
-1.  **Phase 1: The Basics (Current)**:
-    - Set up a Bazel workspace that builds both C++ and Rust.
-    - **Goal**: Ensure `bazel run //src:main` prints "Hello".
-2.  **Phase 2: The Bridge (`cxx`)**:
-    - Configure the `cxx` crate.
-    - Create a bidirectional bridge where Rust can instantiate and call methods on a C++ class (`src/counter.h`).
-    - **Goal**: `main.rs` creates a `Counter`, increments it, and prints the result.
+Mechanism: Declared as type Counter; inside extern "C++". Rust cannot inspect the fields, but can pass the pointer back to C++ to call methods.
 
-3.  **Phase 3: The Hard Stuff (Simulation)**:
-    - Simulate the specific patterns found in `pw_bluetooth_sapphire`:
-      - **`Identifier`**: migrating a "NewType" wrapper (like `PeerId`).
-      - **`ByteBuffer`**: migrating memory ownership and views (Span/Vector).
-      - **`WeakSelf`**: simulating the async callback pattern.
+### 2. Shared Structs (Stack Memory)
+Concept: Passing exact byte-for-byte data structures by value.
 
-### Requirements
+Mechanism: Structs defined inside the #[cxx::bridge] macro (e.g., DeviceAddressBytes). Both compilers agree on the memory layout, allowing safe, zero-overhead passing.
 
-- **Build System**: Must use **Bazel**.
-- **Version Pinning**: Must use **Bazel 7.4.1** (defined in `.bazelversion`) to ensure compatibility with `rules_rust`.
-- **Self-Contained**: All dependencies must be declared in `MODULE.bazel`. No system-wide library installations.
-- **Reproducibility**: `bazel run //src:main` must always work on a fresh clone.
+### 3. Dynamic Strings (Heap Memory)
+Concept: Safely passing strings without triggering double-frees or segmentation faults from mismatched allocators.
 
-### Current Status
+C++ to Rust: C++ std::string is received in Rust as &cxx::CxxString.
 
-- Bazel environment configured.
-- C++ and Rust targets defined but isolated.
-- Next step: Add `cxx` to `MODULE.bazel` and bridge the languages.
+Rust to C++: Rust String is received in C++ as rust::String, which handles safe destruction by calling back into Rust's allocator.
+
+### 4. Dynamic Vectors
+Concept: Passing dynamic arrays of data (e.g., byte payloads).
+
+C++ to Rust: C++ std::vector<uint8_t> is received as &cxx::CxxVector<u8>.
+
+Rust to C++: Rust Vec<u8> is received as rust::Vec<uint8_t>. It fully supports standard C++ range-based for loops and iterators.
+
+### 5. Error Handling & Exceptions
+Concept: Translating Rust's enum-based errors into standard C++ exceptions.
+
+Mechanism: Rust returns a Result<T, E>. If it returns Err, the CXX bridge automatically intercepts it and throws a rust::Error in C++, which can be caught using a standard try-catch block.
+
+### 6. Rust Opaque Types
+Concept: C++ holds a smart pointer to a stateful Rust object and calls its methods.
+
+Mechanism: Declared as type MyRustDevice; inside extern "Rust". C++ receives a rust::Box<MyRustDevice> and can call methods on it using the -> operator, executing safe Rust code under the hood.
