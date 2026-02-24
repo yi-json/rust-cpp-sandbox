@@ -21,7 +21,7 @@ cc_library(
 # 3. Compile rust binary and link it to c++ library
 rust_binary(
   name = "main",
-  srcs = ["main.rs"],
+  srcs = ["main.rs", "rust_device.rs"],
   deps = [
     ":device_cpp",
     "@cxx.rs//:cxx",

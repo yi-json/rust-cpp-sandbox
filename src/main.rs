@@ -1,3 +1,6 @@
+mod rust_device;
+use rust_device::MyRustDevice;
+
 #[cxx::bridge]
 mod ffi {
     struct DeviceAddressBytes {
@@ -23,6 +26,17 @@ mod ffi {
 
         // phase 4 - error handling
         fn connect_to_device(id: u64) -> Result<()>;
+
+        // phase 5 - rust opaque type
+        type MyRustDevice;
+
+        // constructor function returning a heap-allocated Box
+        // recall that Box<T> is a smart pointer that allows you to store data on heap instead of stack
+        fn create_rust_device(initial_state: u32) -> Box<MyRustDevice>;
+
+        // methods attached to the struct
+        fn tick(self: &mut MyRustDevice);
+        fn get_state(self: &MyRustDevice) -> u32;
     }
 }
 
@@ -71,6 +85,10 @@ fn connect_to_device(id: u64) -> Result<(), String> {
     } else {
         Err(format!("Device {} refused connection. Invalid credentials.", id))
     }
+}
+
+fn create_rust_device(initial_state: u32) -> Box<MyRustDevice> {
+    MyRustDevice::new(initial_state)
 }
 
 
