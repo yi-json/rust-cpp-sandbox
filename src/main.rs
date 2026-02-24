@@ -1,25 +1,29 @@
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        // Tell Rust to look at our C++ header
-        include!("src/counter.h");
+    struct DeviceAddressBytes {
+        bytes: [u8; 6],
+    }
 
-        // Map the C++ Counter class to an opaque Rust type
-        type Counter;
-        
-        // Define the methods we want to call from Rust
-        fn new_counter() -> UniquePtr<Counter>;
-        fn inc(self: Pin<&mut Counter>);
-        fn get(self: &Counter) -> i32;
+    struct PeerId {
+        value: u64,
+    }
+
+    unsafe extern "C++" {
+        include!("src/device.h");
+        fn simulate_discovery();
+    }
+
+    extern "Rust" {
+        fn assign_peer_id(address: DeviceAddressBytes) -> PeerId;
     }
 }
 
-fn main() {
-    // 1. Instantiate the C++ class
-    let mut counter = ffi::new_counter();
-    println!("Initial value from C++: {}", counter.get());
+fn assign_peer_id(address: ffi::DeviceAddressBytes) -> ffi::PeerId {
+    println!("{:?}", address.bytes);
+    ffi::PeerId { value: 42 }
+}
 
-    // 2. Mutate the C++ class (Notice we have to pin it in memory!)
-    counter.pin_mut().inc();
-    println!("Value after inc() in Rust: {}", counter.get());
+
+fn main() {
+    ffi::simulate_discovery();
 }

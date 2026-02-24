@@ -12,9 +12,9 @@ genrule(
 
 # 2. Compile Counter class and the generated bridge
 cc_library(
-  name = "counter_cpp",
-  srcs = ["counter.cc", "main.cxx.cc"],
-  hdrs = ["counter.h", "main.cxx.h"],
+  name = "device_cpp",
+  srcs = ["device.cc", "main.cxx.cc"],
+  hdrs = ["device.h", "main.cxx.h"],
   deps = ["@cxx.rs//:core"], # Fixed typo: was @cxx//:cxx_cc
 )
 
@@ -23,7 +23,7 @@ rust_binary(
   name = "main",
   srcs = ["main.rs"],
   deps = [
-    ":counter_cpp",
+    ":device_cpp",
     "@cxx.rs//:cxx",
   ],
 )
