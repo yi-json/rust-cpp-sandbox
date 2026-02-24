@@ -14,9 +14,15 @@ mod ffi {
     }
 
     extern "Rust" {
+        // phase 2 - shared types
         fn assign_peer_id(address: DeviceAddressBytes) -> PeerId;
+
+        // phase 3 - sharing dynamic structures
         fn verify_device_name(name: &CxxString) -> String;
         fn process_payload(payload: &CxxVector<u8>) -> Vec<u8>;
+
+        // phase 4 - error handling
+        fn connect_to_device(id: u64) -> Result<()>;
     }
 }
 
@@ -54,6 +60,17 @@ fn process_payload(payload: &cxx::CxxVector<u8>) -> Vec<u8> {
     response_packet.push(0xFF);
 
     response_packet
+}
+
+fn connect_to_device(id: u64) -> Result<(), String> {
+    println!("Rust is attempting to connect to device ID: {}", id);
+
+    if id == 42 {
+        println!("Rust: Connection Successful!");
+        Ok(())
+    } else {
+        Err(format!("Device {} refused connection. Invalid credentials.", id))
+    }
 }
 
 
