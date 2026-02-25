@@ -1,4 +1,4 @@
-# Rust + C++ Interop Sandbox
+# `cxx` Interop Sandbox
 
 This sandbox demonstrates how to safely bridge Rust and C++ using the [`cxx`](https://cxx.rs/) crate and the Bazel build system. It covers the complete spectrum of cross-language memory management and function calling.
 
